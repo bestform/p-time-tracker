@@ -70,7 +70,7 @@ if(empty($input)){
     echo "You're not working on anything\n";
     exit;
   }
-  echo "In progress\t" . h_m($task["minutes"]) . "\t" . $task["task"] . "\n";
+  echo "In progress\t", h_m($task["minutes"]), "\t", $task["task"], "\n";
   exit;
 }
 
@@ -81,7 +81,7 @@ if(preg_match("/^(r|resume)$/", $input) == 1){
     exit;
   }
   set_current_task($last["task"]);
-  echo "Resuming " . $last["task"] . "\n";
+  echo "Resuming ", $last["task"], "\n";
   exit;
 }
 
@@ -98,14 +98,14 @@ if($task != null){
   $entry = array(date($format, $task["start"]), date($format, $task["end"]), $task["task"], $task["minutes"]);
   fwrite($f, join("\t", $entry) . "\n");
   fclose($f);
-  echo "Finished\t", h_m($task["minutes"]), "\t", $task["task"] . "\n";
+  echo "Finished\t", h_m($task["minutes"]), "\t", $task["task"], "\n";
 
   rename($currentpath, $lastpath);
 }
 
 if(preg_match("/^(d|done|stop|)$/", $input) == 0){
   set_current_task($input);
-  echo "Started\tnow\t", $input . "\n";
+  echo "Started\tnow\t", $input, "\n";
 }
 
 
