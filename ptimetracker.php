@@ -1,9 +1,9 @@
 <?php
 
 date_default_timezone_set("Europe/Berlin");
-$datadir = $_SERVER['HOME'] . "/.ptimetracker";
-$lastpath = $datadir . "/last";
-$currentpath = $datadir . "/current";
+$datadir = concat_path($_SERVER['HOME'], ".ptimetracker");
+$lastpath = concat_path($datadir, "last");
+$currentpath = concat_path($datadir, "current");
 
 if(!file_exists($datadir)) {
   mkdir($datadir);
@@ -11,6 +11,23 @@ if(!file_exists($datadir)) {
 
 unset($argv[0]);
 $input = join(" ", $argv);
+
+function concat_path(){
+  $sep = "/";
+  $args = func_get_args();
+  $ret = array_pop($args);
+  while(count($args) > 0){
+    $ret = strip_last(array_pop($args), $sep) . $sep . $ret;
+  }
+  return $ret;
+}
+
+function strip_last($haystack, $needle){
+  if(substr($haystack, -1) == $needle){
+    return substr($haystack, 0, strlen($haystack) -1);
+  }
+  return $haystack;
+}
 
 function current_task(){
   return task("current");
@@ -22,7 +39,7 @@ function last_task(){
 
 function task($whichtask){
   global $datadir;
-  $path = $datadir . "/" . $whichtask;
+  $path = concat_path($datadir, $whichtask);
 
   if(!file_exists($path)){
     return null;
@@ -88,11 +105,11 @@ if(preg_match("/^(r|resume)$/", $input) == 1){
 $task = current_task();
 
 if($task != null){
-  $yearpath = $datadir . "/" . date("Y");
+  $yearpath = concat_path($datadir, date("Y"));
   if(!file_exists($yearpath)){
     mkdir($yearpath);
   }
-  $todaypath = $yearpath . "/" . date("Y-m-d", $task["start"]) . ".txt";
+  $todaypath = concat_path($yearpath, date("Y-m-d", $task["start"]) . ".txt");
   $f = fopen($todaypath, "a");
   $format = "Y-m-d h:i";
   $entry = array(date($format, $task["start"]), date($format, $task["end"]), $task["task"], $task["minutes"]);
