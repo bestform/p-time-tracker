@@ -1,128 +1,158 @@
 <?php
 
 date_default_timezone_set("Europe/Berlin");
-$datadir = concat_path($_SERVER['HOME'], ".ptimetracker");
-$lastpath = concat_path($datadir, "last");
-$currentpath = concat_path($datadir, "current");
+$sDatadir = concat_path($_SERVER['HOME'], ".ptimetracker");
+$sLastpath = concat_path($sDatadir, "last");
+$sCurrentpath = concat_path($sDatadir, "current");
 
-if(!file_exists($datadir)) {
-  mkdir($datadir);
+if(!file_exists($sDatadir)) {
+  mkdir($sDatadir);
 }
 
 unset($argv[0]);
-$input = join(" ", $argv);
+$sInput = join(" ", $argv);
 
+/*
+ * @return string the concatenated string
+ */
 function concat_path(){
-  $sep = "/";
-  $args = func_get_args();
-  $ret = array_pop($args);
-  while(count($args) > 0){
-    $ret = strip_last(array_pop($args), $sep) . $sep . $ret;
+  $sSep = '/';
+  $aArgs = func_get_args();
+  $sRet = array_pop($aArgs);
+  while(count($aArgs) > 0){
+    $sRet = strip_last(array_pop($aArgs), $sSep) . $sSep . $sRet;
   }
-  return $ret;
+  return $sRet;
 }
 
-function strip_last($haystack, $needle){
-  if(substr($haystack, -1) == $needle){
-    return substr($haystack, 0, strlen($haystack) -1);
+/*
+ * @param string $sHaystack
+ * @param string $sNeedle
+ * @return string stripped string
+ */
+
+function strip_last($sHaystack, $sNeedle){
+  if(substr($sHaystack, -1) == $sNeedle){
+    return substr($sHaystack, 0, strlen($sHaystack) -1);
   }
-  return $haystack;
+  return $sHaystack;
 }
 
+/*
+ * @return string the current task
+ */
 function current_task(){
   return task("current");
 }
 
+/*
+ * @return string the last task
+ */
 function last_task(){
   return task("last");
 }
 
-function task($whichtask){
-  global $datadir;
-  $path = concat_path($datadir, $whichtask);
+/*
+ * @param string $sWhichtask "current" or "last"
+ * @return string the task defined by the given parameter
+ */
+function task($sWhichtask){
+  global $sDatadir;
+  $sPath = concat_path($sDatadir, $sWhichtask);
 
-  if(!file_exists($path)){
+  if(!file_exists($sPath)){
     return null;
   }
-  $lines = file($path);
-  $line = trim($lines[0]);
+  $aLines = file($sPath);
+  $sLine = trim($aLines[0]);
 
-  if(empty($line)){
+  if(empty($sLine)){
     return null;
   }
 
-  $taskarray = preg_split("/\t/", $line);
-  $start = $taskarray[0];
-  $task = $taskarray[1];
-  $end = time();
-  $minutes = floor(($end - $start) / 60);
+  $aTasks = preg_split("/\t/", $sLine);
+  $sStart = $aTasks[0];
+  $sTask = $aTasks[1];
+  $tEnd = time();
+  $iMinutes = floor(($tEnd - $sStart) / 60);
 
-  return array("start" => $start, "task" => $task, "end" => $end, "minutes" => $minutes);
+  return array("start" => $sStart, "task" => $sTask, "end" => $tEnd, "minutes" => $iMinutes);
 }
 
-function set_current_task($task){
-  global $datadir, $lastpath, $currentpath;
-  if(file_exists($lastpath)){
-    unlink($lastpath);
+/*
+ * @param string $sTask the current task
+ */
+function set_current_task($sTask){
+  global $sDatadir, $sLastpath, $sCurrentpath;
+  if(file_exists($sLastpath)){
+    unlink($sLastpath);
   }
-  $f = fopen($currentpath, "w");
-  fwrite($f, time() . "\t" . $task);
-  fclose($f);
+  $fFile = fopen($sCurrentpath, "w");
+  fwrite($fFile, time() . "\t" . $sTask);
+  fclose($fFile);
 }
 
-function h_m($minutes){
-  return floor($minutes / 60) . ":" . nice_minutes($minutes % 60);
+/*
+ * @param int $iMinutes
+ * @return string a nice representation of the given amount of minutes
+ */
+function minutes_to_clock_string($iMinutes){
+  return floor($iMinutes / 60) . ":" . nice_minutes($iMinutes % 60);
 }
 
-function nice_minutes($minutes){
-  if($minutes < 10){
-    $minutes = "0" . $minutes;
+/*
+ * @param int $iMinutes
+ * @return string minutes with 0 as prefix when lower than 10
+ */
+function nice_minutes($iMinutes){
+  if($iMinutes < 10){
+    $iMinutes = "0" . $iMinutes;
   }
-  return $minutes;
+  return $iMinutes;
 }
 
-if(empty($input)){
-  $task = current_task();
-  if($task == null){
+if(empty($sInput)){
+  $sTask = current_task();
+  if($sTask == null){
     echo "You're not working on anything\n";
     exit;
   }
-  echo "In progress\t", h_m($task["minutes"]), "\t", $task["task"], "\n";
+  echo "In progress\t", minutes_to_clock_string($sTask["minutes"]), "\t", $sTask["task"], "\n";
   exit;
 }
 
-if(preg_match("/^(r|resume)$/", $input) == 1){
-  $last = last_task();
-  if($last == null){
+if(preg_match("/^(r|resume)$/", $sInput) == 1){
+  $sLast = last_task();
+  if($sLast == null){
     echo "No task to resume\n";
     exit;
   }
-  set_current_task($last["task"]);
-  echo "Resuming ", $last["task"], "\n";
+  set_current_task($sLast["task"]);
+  echo "Resuming ", $sLast["task"], "\n";
   exit;
 }
 
-$task = current_task();
+$sTask = current_task();
 
-if($task != null){
-  $yearpath = concat_path($datadir, date("Y"));
-  if(!file_exists($yearpath)){
-    mkdir($yearpath);
+if($sTask != null){
+  $sYearpath = concat_path($sDatadir, date("Y"));
+  if(!file_exists($sYearpath)){
+    mkdir($sYearpath);
   }
-  $todaypath = concat_path($yearpath, date("Y-m-d", $task["start"]) . ".txt");
-  $f = fopen($todaypath, "a");
-  $format = "Y-m-d h:i";
-  $entry = array(date($format, $task["start"]), date($format, $task["end"]), $task["task"], $task["minutes"]);
-  fwrite($f, join("\t", $entry) . "\n");
-  fclose($f);
-  echo "Finished\t", h_m($task["minutes"]), "\t", $task["task"], "\n";
+  $sTodaypath = concat_path($sYearpath, date("Y-m-d", $sTask["start"]) . ".txt");
+  $fFile = fopen($sTodaypath, "a");
+  $sFormat = "Y-m-d h:i";
+  $sEntry = array(date($sFormat, $sTask["start"]), date($sFormat, $sTask["end"]), $sTask["task"], $sTask["minutes"]);
+  fwrite($fFile, join("\t", $sEntry) . "\n");
+  fclose($fFile);
+  echo "Finished\t", minutes_to_clock_string($sTask["minutes"]), "\t", $sTask["task"], "\n";
 
-  rename($currentpath, $lastpath);
+  rename($sCurrentpath, $sLastpath);
 }
 
-if(preg_match("/^(d|done|stop|)$/", $input) == 0){
-  set_current_task($input);
-  echo "Started\tnow\t", $input, "\n";
+if(preg_match("/^(d|done|stop|)$/", $sInput) == 0){
+  set_current_task($sInput);
+  echo "Started\tnow\t", $sInput, "\n";
 }
 
 
