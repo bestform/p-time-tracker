@@ -10,6 +10,9 @@ class VfsFileWriter implements IFileWriter {
 
   public function writeToFile($sPath, $sContents, $bAppend){
     $sWriteflag = $bAppend ? "a" : "w";
+    if(!vfsStreamWrapper::getRoot()->hasChild($sPath)){
+      vfsStreamWrapper::getRoot()->addChild(vfsStream::newFile($sPath, 777));
+    }
     $fFile = fopen(vfsStream::url($sPath), $sWriteflag);
     fwrite($fFile, $sContents);
     fclose($fFile);

@@ -10,6 +10,8 @@ class TestTimetrackerFunctions extends PHPUnit_Framework_TestCase {
     protected $writer;
 
     protected $sDataDir = "datadir";
+    protected $sCurrentPath = "datadir/current";
+    protected $sLastPath = "datadir/last";
 
     protected function setUp() {
       $this->writer = new VfsFileWriter($this->sDataDir);
@@ -45,16 +47,27 @@ class TestTimetrackerFunctions extends PHPUnit_Framework_TestCase {
     }
 
     public function testTaskReturnsNullWhenCurrentFileIsEmpty(){
-      fclose(fopen(vfsStream::url(concat_path($this->sDataDir, "current")), "a"));
+      fclose(fopen(vfsStream::url($this->sCurrentPath), "a"));
       $currentTask = task("current", $this->sDataDir, $this->writer);
       $this->assertNull($currentTask, "current empty Task is not null as expected");
     }
 
-    public function testTaskReturnsCorrentArrayWhenCurrentTaskIsActive(){
+    public function testTaskReturnsCurrentArrayWhenCurrentTaskIsActive(){
       $start = time()-100;
-      $this->writer->writeToFile(concat_path($this->sDataDir, "current"), $start . "\ttesttask", false);
+      $this->writer->writeToFile($this->sCurrentPath, $start . "\ttesttask", false);
       $currentTask = task("current", $this->sDataDir, $this->writer);
       $this->assertEquals($currentTask["task"], "testtask");
+    }
+
+    public function testSetCurrentTaskSetsCurrentTask(){
+      $this->assertFalse($this->writer->fileExists($this->sCurrentPath), "current path already exists");
+      set_current_task("testtask", $this->sLastPath, $this->sCurrentPath, $this->writer);
+      $this->assertTrue($this->writer->fileExists($this->sCurrentPath), "current file wasn't created");
+      $aLines = $this->writer->readFromFile($this->sCurrentPath);
+      $sLine = $aLines[0];
+      $aTaskParts = preg_split("/\t/", $sLine);
+      $sTask = $aTaskParts[1];
+      $this->assertEquals("testtask", $sTask, "wrong task was created");
     }
     
 }
