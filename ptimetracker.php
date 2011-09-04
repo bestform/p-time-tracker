@@ -84,6 +84,12 @@ function set_current_task($sTask, $sLastpath, $sCurrentpath, IFileWriter $writer
  * @return string a nice representation of the given amount of minutes
  */
 function minutes_to_clock_string($iMinutes){
+  if($iMinutes < 0){
+    throw new InvalidArgumentException("negative minutes not allowed");
+  }
+  if(!is_integer($iMinutes)){
+    throw new InvalidArgumentException("only positive integers allowed");
+  }
   return floor($iMinutes / 60) . ":" . nice_minutes($iMinutes % 60);
 }
 
