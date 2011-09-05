@@ -1,7 +1,5 @@
 <?php
-$GLOBALS["ptimetrackerTestrun"] = true;
 require_once("ptimetracker.php");
-unset($GLOBALS["ptimetrackerTestrun"]);
 require_once("vfsStream/vfsStream.php");
 require_once("VfsFileWriter.php");
 

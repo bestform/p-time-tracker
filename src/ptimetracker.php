@@ -161,7 +161,7 @@ function run($argv, IFileWriter $writer){
   }
 }
 
-if(!isset($GLOBALS["ptimetrackerTestrun"])){
+if(!defined('APPLICATION_ENV') || APPLICATION_ENV != "testing"){
   run($argv, new FSFileWriter());
 }
 
