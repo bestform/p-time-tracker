@@ -1,5 +1,7 @@
 <?php
 
+namespace ptimetracker;
+
 interface IFileWriter {
 
   public function writeToFile($sPath, $sContents, $bAppend);

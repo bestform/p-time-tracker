@@ -1,7 +1,9 @@
 <?php
-require_once("ptimetracker.php");
+require_once("ptimetracker/ptimetracker.php");
 require_once("vfsStream/vfsStream.php");
-require_once("VfsFileWriter.php");
+
+use ptimetracker\IFileWriter\VfsFileWriter;
+use ptimetracker\IFileWriter;
 
 class TestTimetrackerFunctions extends PHPUnit_Framework_TestCase {
 
@@ -20,46 +22,46 @@ class TestTimetrackerFunctions extends PHPUnit_Framework_TestCase {
   }
 
   public function testPathSegmentsGetConcatenatedCorrectly(){
-     $result = concat_path("a", "b", "c");
+     $result = ptimetracker\concat_path("a", "b", "c");
      $this->assertEquals("a/b/c", $result);
   }
 
   public function testSlashesInPathSegmentsAreHandledCorrectly(){
-     $result = concat_path("a/", "b/", "c/");
+     $result = ptimetracker\concat_path("a/", "b/", "c/");
      $this->assertEquals("a/b/c/", $result);
   }
 
   public function testStripLastStripsLastChar(){
-    $result = strip_last("abccc", "c");
+    $result = ptimetracker\strip_last("abccc", "c");
     $this->assertEquals("abcc", $result);
   }
 
   public function testStripLastDoesntStripWrongChar(){
-    $result = strip_last("abccc", "x");
+    $result = ptimetracker\strip_last("abccc", "x");
     $this->assertEquals("abccc", $result);
   }
 
   public function testTaskReturnsNullWhenNoCurrentTaskIsActive(){
-    $currentTask = task("current", $this->sDataDir, $this->writer);
+    $currentTask = ptimetracker\task("current", $this->sDataDir, $this->writer);
     $this->assertNull($currentTask, "current Task is not null as expected");
   }
 
   public function testTaskReturnsNullWhenCurrentFileIsEmpty(){
     fclose(fopen(vfsStream::url($this->sCurrentPath), "a"));
-    $currentTask = task("current", $this->sDataDir, $this->writer);
+    $currentTask = ptimetracker\task("current", $this->sDataDir, $this->writer);
     $this->assertNull($currentTask, "current empty Task is not null as expected");
   }
 
   public function testTaskReturnsCurrentArrayWhenCurrentTaskIsActive(){
     $start = time()-100;
     $this->writer->writeToFile($this->sCurrentPath, $start . "\ttesttask", false);
-    $currentTask = task("current", $this->sDataDir, $this->writer);
+    $currentTask = ptimetracker\task("current", $this->sDataDir, $this->writer);
     $this->assertEquals($currentTask["task"], "testtask");
   }
 
   public function testSetCurrentTaskSetsCurrentTask(){
     $this->assertFalse($this->writer->fileExists($this->sCurrentPath), "current path already exists");
-    set_current_task("testtask", $this->sLastPath, $this->sCurrentPath, $this->writer);
+    ptimetracker\set_current_task("testtask", $this->sLastPath, $this->sCurrentPath, $this->writer);
     $this->assertTrue($this->writer->fileExists($this->sCurrentPath), "current file wasn't created");
     $aLines = $this->writer->readFromFile($this->sCurrentPath);
     $sLine = $aLines[0];
@@ -69,21 +71,21 @@ class TestTimetrackerFunctions extends PHPUnit_Framework_TestCase {
   }
 
   public function testMinutesToClockString(){
-    $this->assertEquals("1:01", minutes_to_clock_string(61), "Minutes weren't converted to nice string correctly");
+    $this->assertEquals("1:01", ptimetracker\minutes_to_clock_string(61), "Minutes weren't converted to nice string correctly");
   }
 
   /**
-   * @expectedException InvalidArgumentException
+   * @expectedException \InvalidArgumentException
    */
   public function testMinutesToClockStringWithNegativeNumber(){
-    minutes_to_clock_string(-10);
+    ptimetracker\minutes_to_clock_string(-10);
   }
 
   /**
-   * @expectedException InvalidArgumentException
+   * @expectedException \InvalidArgumentException
    */
   public function testMinutesToClockStringWithStringArgument(){
-    minutes_to_clock_string("invalid");
+    ptimetracker\minutes_to_clock_string("invalid");
   }
 
   

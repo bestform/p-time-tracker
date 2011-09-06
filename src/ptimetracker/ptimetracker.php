@@ -1,7 +1,9 @@
 <?php
 
-require_once("IFileWriter.php");
-require_once("FSFileWriter.php");
+namespace ptimetracker;
+use ptimetracker\IFileWriter\FSFileWriter;
+use ptimetracker\IFileWriter;
+
 /*
  * @return string the concatenated string
  */
@@ -85,10 +87,10 @@ function set_current_task($sTask, $sLastpath, $sCurrentpath, IFileWriter $writer
  */
 function minutes_to_clock_string($iMinutes){
   if($iMinutes < 0){
-    throw new InvalidArgumentException("negative minutes not allowed");
+    throw new \InvalidArgumentException("negative minutes not allowed");
   }
   if(!is_integer($iMinutes)){
-    throw new InvalidArgumentException("only positive integers allowed");
+    throw new \InvalidArgumentException("only positive integers allowed");
   }
   return floor($iMinutes / 60) . ":" . nice_minutes($iMinutes % 60);
 }

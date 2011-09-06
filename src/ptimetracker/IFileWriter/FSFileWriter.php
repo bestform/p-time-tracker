@@ -1,5 +1,8 @@
 <?php
 
+namespace ptimetracker\IFileWriter;
+use ptimetracker\IFileWriter;
+
 class FSFileWriter implements IFileWriter{
 
   public function writeToFile($sPath, $sContents, $bAppend) {
